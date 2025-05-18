@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Test My Speed Now</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 2rem; max-width: 600px; margin: auto; }
+  button { padding: 10px 20px; font-size: 16px; }
+  #result { margin-top: 1rem; font-size: 1.2rem; }
+</style>
+</head>
+<body>
+  <h1>Test My Speed Now</h1>
+  <button id="startBtn">Start Speed Test</button>
+  <div id="result"></div>
+
+  <script>
+    const fileUrl = "https://ash-speed.hetzner.com/100MB.bin"; // 100 MB test file from Ashburn, VA
+    const fileSizeBytes = 100 * 1024 * 1024; // 100 MB in bytes
+
+    document.getElementById("startBtn").onclick = async () => {
+      const resultEl = document.getElementById("result");
+      resultEl.textContent = "Testing download speed...";
+
+      const startTime = performance.now();
+      try {
+        const response = await fetch(fileUrl, { cache: "no-cache" });
+        const reader = response.body.getReader();
+
+        let receivedLength = 0;
+        while(true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+          receivedLength += value.length;
+        }
+
+        const endTime = performance.now();
+        const durationSeconds = (endTime - startTime) / 1000;
+        const bitsLoaded = fileSizeBytes * 8;
+        const speedBps = bitsLoaded / durationSeconds;
+        const speedMbps = (speedBps / (1024 * 1024)).toFixed(2);
+
+        resultEl.textContent = `Download speed: ${speedMbps} Mbps`;
+      } catch(e) {
+        resultEl.textContent = "Error testing speed. Try again.";
+        console.error(e);
+      }
+    };
+  </script>
+</body>
+</html>
